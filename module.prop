@@ -1,0 +1,6 @@
+id=kexec
+name=Kexec Tools for Android
+version=v1
+versionCode=1
+author=Denis Efremov (@evdenis)
+description=Kexec tools for Android (aarch64).
