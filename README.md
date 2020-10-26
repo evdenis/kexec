@@ -10,9 +10,7 @@ Stable release:
 Master branch:
 1. git clone https://github.com/evdenis/kexec
 2. cd kexec
-3. git archive --output kexec.zip HEAD
-4. adb push kexec.zip /sdcard/
-5. MagiskManager -> Modules + kexec.zip -> Reboot
+3. make install
 
 ## Support
 
