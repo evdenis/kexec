@@ -1,1 +1,5 @@
-*.zip
+/*.zip
+/out/
+/out-*/
+CLAUDE.md
+CHECKLIST.md
