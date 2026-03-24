@@ -5,9 +5,4 @@ if ! command -v shellcheck >/dev/null 2>&1; then
     exit 0
 fi
 
-STATUS=0
-for f in *.sh; do
-    [ -f "$f" ] || continue
-    shellcheck "$f" || STATUS=1
-done
-exit $STATUS
+make lint

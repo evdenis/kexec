@@ -22,6 +22,14 @@ install: $(ZIP)
 clean:
 	rm -f *.zip
 
+lint:
+	@STATUS=0; \
+	for f in *.sh; do \
+	    [ -f "$$f" ] || continue; \
+	    shellcheck "$$f" || STATUS=1; \
+	done; \
+	exit $$STATUS
+
 setup:
 	ln -sf ../../hooks/pre-commit .git/hooks/pre-commit
 
@@ -30,4 +38,4 @@ update:
 	    https://raw.githubusercontent.com/topjohnwu/Magisk/master/scripts/module_installer.sh && \
 	mv META-INF/com/google/android/update-binary.tmp META-INF/com/google/android/update-binary
 
-.PHONY: all zip install clean setup update
+.PHONY: all zip install clean lint setup update
