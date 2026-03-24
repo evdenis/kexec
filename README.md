@@ -1,16 +1,30 @@
 # Kexec tools for Android
 
-## How to install:
+Magisk module that installs kexec tools for Android (aarch64). Installs `kexec` to `/system/bin/` via Magisk's systemless overlay.
 
-Stable release:
-1. Dowload latest kexec.zip from releases page
-   https://github.com/evdenis/kexec/releases
-2. MagiskManager -> Modules + Downloads/kexec.zip -> Reboot
+## Prerequisites
 
-Master branch:
-1. git clone https://github.com/evdenis/kexec
-2. cd kexec
-3. make install
+- Android device with [Magisk](https://github.com/topjohnwu/Magisk) v20.0+ installed
+- Architecture: aarch64
+
+## Installation
+
+### From release (recommended)
+
+1. Download the latest `kexec-*.zip` from the [releases page](https://github.com/evdenis/kexec/releases)
+2. Open **Magisk** → **Modules** → **Install from storage** → select the zip → **Reboot**
+
+Supports auto-update via Magisk's built-in update mechanism.
+
+### From source
+
+```bash
+git clone https://github.com/evdenis/kexec
+cd kexec
+make install
+```
+
+Requires `adb` with USB debugging enabled and root access on the device.
 
 ## Support
 
