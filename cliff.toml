@@ -1,0 +1,25 @@
+[changelog]
+header = "# Changelog\n\n"
+body = """
+{% if commits %}
+## {{ version }}\n
+{% for commit in commits %}
+- {{ commit.message | upper_first }}\
+{% endfor %}\n
+{% endif %}
+"""
+trim = true
+footer = """
+## v1
+
+- Initial release
+- Kexec tools for Android (aarch64)
+"""
+
+[git]
+conventional_commits = true
+sort_commits = "newest"
+commit_parsers = [
+    { message = "^(feat|fix|docs|refactor|ci|build|chore|test)", group = "Changes" },
+    { message = ".*", skip = true },
+]
