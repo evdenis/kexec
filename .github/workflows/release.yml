@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Version consistency check
+        run: |
+          PROP_VER=$(grep '^version=' module.prop | cut -d'=' -f2)
+          if [ "$TAG" != "$PROP_VER" ]; then
+            echo "ERROR: Tag ($TAG) does not match module.prop version ($PROP_VER)"
+            exit 1
+          fi
+          if ! grep -q "^## ${TAG}$" CHANGELOG.md; then
+            echo "ERROR: CHANGELOG.md missing section for ${TAG}"
+            exit 1
+          fi
+          ID=$(grep '^id=' module.prop | cut -d'=' -f2)
+          NAME=$(grep '^name=' module.prop | cut -d'=' -f2)
+          DESCRIPTION=$(grep '^description=' module.prop | cut -d'=' -f2)
+          echo "ID=${ID}" >> "$GITHUB_ENV"
+          echo "NAME=${NAME}" >> "$GITHUB_ENV"
+          echo "DESCRIPTION=${DESCRIPTION}" >> "$GITHUB_ENV"
+          echo "Version consistent: $TAG"
+
+      - name: Check update-binary freshness
+        run: |
+          make update
+          if ! git diff --quiet META-INF/com/google/android/update-binary; then
+            echo "ERROR: update-binary is outdated — run 'make update' and commit"
+            exit 1
+          fi
+
+      - name: Build zip
+        run: make zip
+
+      - name: Verify zip contents
+        run: |
+          LISTING=$(unzip -l *.zip)
+          echo "$LISTING"
+          echo "$LISTING" | grep -qE '\.git/|\.claude/|Makefile|README\.md|CHANGELOG\.md|CHECKLIST\.md|CLAUDE\.md|LICENSE|cliff\.toml|\.gitignore|\.gitattributes|hooks/' \
+            && { echo "::error::Dev files found in zip"; exit 1; } || true
+
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip all
+        env:
+          OUTPUT: /tmp/release-notes.md
+
+      - name: Generate update.json
+        run: |
+          VERSION_CODE=$(grep '^versionCode=' module.prop | cut -d'=' -f2)
+          REPO="${GITHUB_REPOSITORY}"
+          printf '{\n  "versionCode": %s,\n  "version": "%s",\n  "zipUrl": "https://github.com/%s/releases/download/%s/%s-%s.zip",\n  "changelog": "https://github.com/%s/releases/tag/%s"\n}\n' \
+            "${VERSION_CODE}" "${TAG}" "${REPO}" "${TAG}" "${ID}" "${TAG}" "${REPO}" "${TAG}" > update.json
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          printf '## %s — %s\n\n' "${NAME}" "${DESCRIPTION}" > /tmp/release-body.md
+          printf 'Magisk module providing kexec tools for Android (aarch64).\n' >> /tmp/release-body.md
+          printf 'Installs `kexec` to `/system/bin/` via Magisk'\''s systemless overlay.\n\n' >> /tmp/release-body.md
+          cat /tmp/release-notes.md >> /tmp/release-body.md
+          printf '\n## Installation\n\n' >> /tmp/release-body.md
+          printf '1. Download **%s-%s.zip** from the assets below\n' "${ID}" "${TAG}" >> /tmp/release-body.md
+          printf '2. Open **Magisk** → **Modules** → **Install from storage** → select the zip → **Reboot**\n\n' >> /tmp/release-body.md
+          printf 'Supports auto-update via Magisk'\''s built-in update mechanism.\n' >> /tmp/release-body.md
+          gh release create "$TAG" \
+            --title "${NAME} ${TAG}" \
+            --notes-file /tmp/release-body.md \
+            ${ID}-v*.zip \
+            update.json
