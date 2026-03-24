@@ -4,3 +4,4 @@ version=v1
 versionCode=1
 author=Denis Efremov (@evdenis)
 description=Kexec tools for Android (aarch64).
+updateJson=https://github.com/evdenis/kexec/releases/latest/download/update.json
