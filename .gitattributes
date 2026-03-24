@@ -1,2 +1,11 @@
 .gitattributes export-ignore
 .gitignore export-ignore
+.github/ export-ignore
+hooks/ export-ignore
+Makefile export-ignore
+README.md export-ignore
+LICENSE export-ignore
+CHANGELOG.md export-ignore
+CHECKLIST.md export-ignore
+CLAUDE.md export-ignore
+cliff.toml export-ignore
