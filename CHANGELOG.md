@@ -1,6 +1,16 @@
 # Changelog
 
 
+## v3.0
+
+
+- Bump version to v3.0
+- Update README for multi-arch and Docker builds
+- Add automated upstream kexec-tools update workflow
+- Add multi-arch kexec-tools build (arm64, arm, x86_64, x86)
+- Add Dockerfile and build script for kexec-tools cross-compilation
+
+
 ## v2.0
 
 

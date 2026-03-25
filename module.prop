@@ -1,7 +1,7 @@
 id=kexec
 name=Kexec Tools for Android
-version=v2.0
-versionCode=2
+version=v3.0
+versionCode=3
 author=Denis Efremov (@evdenis)
 description=Kexec-tools v2.0.32 for ARM64, ARM, x86_64, and x86.
 updateJson=https://github.com/evdenis/kexec/releases/latest/download/update.json
