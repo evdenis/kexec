@@ -33,9 +33,9 @@ jobs:
                    META-INF/com/google/android/updater-script; do
             echo "$LISTING" | grep -q "$f" || { echo "MISSING: $f"; exit 1; }
           done
-          for f in .gitignore .gitattributes CLAUDE.md .claude/ .git/ .github/ \
-                   Makefile LICENSE README.md \
-                   CHANGELOG.md CHECKLIST.md cliff.toml hooks/; do
+          for f in .gitignore .gitattributes .dockerignore CLAUDE.md .claude/ .git/ .github/ \
+                   Makefile Dockerfile LICENSE README.md \
+                   CHANGELOG.md CHECKLIST.md cliff.toml hooks/ scripts/ tests/ out/; do
             if echo "$LISTING" | grep -q "$f"; then
               echo "UNEXPECTED: $f found in zip"; exit 1
             fi

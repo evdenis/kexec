@@ -52,7 +52,7 @@ jobs:
         run: |
           LISTING=$(unzip -l *.zip)
           echo "$LISTING"
-          echo "$LISTING" | grep -qE '\.git/|\.github/|\.claude/|Makefile|README\.md|CHANGELOG\.md|CHECKLIST\.md|CLAUDE\.md|LICENSE|cliff\.toml|\.gitignore|\.gitattributes|hooks/' \
+          echo "$LISTING" | grep -qE '\.git/|\.github/|\.claude/|Makefile|Dockerfile|\.dockerignore|README\.md|CHANGELOG\.md|CHECKLIST\.md|CLAUDE\.md|LICENSE|cliff\.toml|\.gitignore|\.gitattributes|hooks/|scripts/|tests/|out/' \
             && { echo "::error::Dev files found in zip"; exit 1; } || true
 
       - name: Generate release notes

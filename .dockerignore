@@ -1,0 +1,17 @@
+.git/
+.github/
+.claude/
+*.zip
+out/
+out-*/
+tests/
+hooks/
+scripts/
+!scripts/build-kexec.sh
+system/
+LICENSE
+CLAUDE.md
+CHECKLIST.md
+README.md
+CHANGELOG.md
+cliff.toml
