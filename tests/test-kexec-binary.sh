@@ -2,12 +2,12 @@
 #
 # Binary sanity tests for the kexec binary.
 # Usage: ./tests/test-kexec-binary.sh [path/to/kexec] [arch]
-#   arch: arm64 (default)
+#   arch: arm64 (default), arm, x86_64, x86
 #
 
 set -euo pipefail
 
-BINARY="${1:-system/bin/kexec}"
+BINARY="${1:-kexec-bin/arm64/kexec}"
 ARCH="${2:-arm64}"
 
 if [[ ! -f "$BINARY" ]]; then
@@ -21,8 +21,23 @@ case "$ARCH" in
         MACHINE_PATTERN="Machine:.*AArch64"
         QEMU_BIN="qemu-aarch64-static"
         ;;
+    arm)
+        ELF_PATTERN="ELF 32-bit LSB executable, ARM, EABI5"
+        MACHINE_PATTERN="Machine:.*ARM"
+        QEMU_BIN="qemu-arm-static"
+        ;;
+    x86_64)
+        ELF_PATTERN="ELF 64-bit LSB executable, x86-64"
+        MACHINE_PATTERN="Machine:.*Advanced Micro Devices X86-64"
+        QEMU_BIN="qemu-x86_64-static"
+        ;;
+    x86)
+        ELF_PATTERN="ELF 32-bit LSB executable, Intel"
+        MACHINE_PATTERN="Machine:.*Intel 80386"
+        QEMU_BIN="qemu-i386-static"
+        ;;
     *)
-        echo "ERROR: unsupported arch: $ARCH (expected: arm64)"
+        echo "ERROR: unsupported arch: $ARCH (expected: arm64, arm, x86_64, x86)"
         exit 1
         ;;
 esac
@@ -100,18 +115,23 @@ else
 fi
 
 # 8. Contains expected strings
+# Pipe to grep -c (not -q) to avoid SIGPIPE killing strings under pipefail
 if [ "$(strings "$BINARY" | grep -c "kexec")" -gt 0 ]; then
     pass "contains 'kexec' string"
 else
     fail "binary does not contain 'kexec' string"
 fi
 
-# 9–10. Smoke tests (QEMU)
+# 9–10. Smoke tests (native execution or QEMU)
 QEMU_TIMEOUT=5
+HOST_ARCH="$(uname -m)"
 CAN_RUN=false
 RUN_CMD=""
 
-if command -v "$QEMU_BIN" >/dev/null 2>&1; then
+if { [[ "$ARCH" == "x86_64" ]] && [[ "$HOST_ARCH" == "x86_64" ]]; } ||
+   { [[ "$ARCH" == "x86" ]] && [[ "$HOST_ARCH" == "x86_64" ]]; }; then
+    CAN_RUN=true
+elif command -v "$QEMU_BIN" >/dev/null 2>&1; then
     CAN_RUN=true
     RUN_CMD="$QEMU_BIN"
 else

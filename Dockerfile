@@ -11,17 +11,25 @@ ARG KEXEC_VERSION=2.0.32
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Enable arm64 arch via ports.ubuntu.com for cross-platform dev packages.
+# Install all cross-compilation toolchains in one layer so it is shared
+# across builds for different architectures (better Docker cache reuse).
 RUN dpkg --add-architecture arm64 && \
-    echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy main universe" >> /etc/apt/sources.list.d/arm64.list && \
-    echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-updates main universe" >> /etc/apt/sources.list.d/arm64.list && \
-    sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list && \
+    dpkg --add-architecture armhf && \
+    dpkg --add-architecture i386 && \
+    echo "deb [arch=arm64,armhf] http://ports.ubuntu.com/ jammy main universe" >> /etc/apt/sources.list.d/ports.list && \
+    echo "deb [arch=arm64,armhf] http://ports.ubuntu.com/ jammy-updates main universe" >> /etc/apt/sources.list.d/ports.list && \
+    sed -i 's/^deb /deb [arch=amd64,i386] /' /etc/apt/sources.list && \
     apt-get update && apt-get install -y --no-install-recommends \
     curl ca-certificates make file xz-utils \
     gcc libc6-dev \
     autoconf automake \
     gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
+    gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
+    gcc-i686-linux-gnu libc6-dev-i386-cross \
     zlib1g-dev:arm64 liblzma-dev:arm64 \
+    zlib1g-dev:armhf liblzma-dev:armhf \
+    zlib1g-dev:i386 liblzma-dev:i386 \
+    zlib1g-dev liblzma-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build

@@ -4,6 +4,9 @@ MODNAME ?= $(call getprop,id)
 MODVER ?= $(call getprop,version)
 ZIP = $(MODNAME)-$(MODVER).zip
 
+ARCHES := arm64 arm x86_64 x86
+ARCH ?= arm64
+
 all: $(ZIP)
 
 zip: $(ZIP)
@@ -12,7 +15,7 @@ zip: $(ZIP)
 	zip -r9 $(ZIP) . -x $(MODNAME)-*.zip LICENSE CLAUDE.md README.md \
 	    CHANGELOG.md CHECKLIST.md cliff.toml .gitignore .gitattributes \
 	    .dockerignore Makefile Dockerfile \
-	    /hooks/* /scripts/* /tests/* /out/* /.git* /.claude*
+	    /hooks/* /scripts/* /tests/* /out/* /out-*/* /.git* /.claude*
 
 install: $(ZIP)
 	adb push $(ZIP) /sdcard/
@@ -36,15 +39,27 @@ setup:
 
 build-kexec:
 	DOCKER_BUILDKIT=1 docker build \
-	    --build-arg KEXEC_ARCH=arm64 \
-	    --target=binary --output=type=local,dest=system/bin/ .
+	    --build-arg KEXEC_ARCH=$(ARCH) \
+	    --target=binary --output=type=local,dest=kexec-bin/$(ARCH)/ .
+
+build-kexec-all:
+	@for arch in $(ARCHES); do \
+	    echo "=== Building kexec for $$arch ==="; \
+	    $(MAKE) build-kexec ARCH=$$arch; \
+	done
 
 test-kexec:
-	./tests/test-kexec-binary.sh system/bin/kexec arm64
+	./tests/test-kexec-binary.sh kexec-bin/$(ARCH)/kexec $(ARCH)
+
+test-kexec-all:
+	@for arch in $(ARCHES); do \
+	    echo "=== Testing kexec for $$arch ==="; \
+	    $(MAKE) test-kexec ARCH=$$arch; \
+	done
 
 update:
 	curl -fS -o META-INF/com/google/android/update-binary.tmp \
 	    https://raw.githubusercontent.com/topjohnwu/Magisk/master/scripts/module_installer.sh && \
 	mv META-INF/com/google/android/update-binary.tmp META-INF/com/google/android/update-binary
 
-.PHONY: all zip install clean lint setup build-kexec test-kexec update
+.PHONY: all zip install clean lint setup build-kexec build-kexec-all test-kexec test-kexec-all update

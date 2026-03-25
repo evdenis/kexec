@@ -28,7 +28,10 @@ jobs:
           ZIP=$(ls *-v*.zip)
           LISTING=$(unzip -l "$ZIP")
           for f in module.prop customize.sh \
-                   system/bin/kexec \
+                   kexec-bin/arm64/kexec \
+                   kexec-bin/arm/kexec \
+                   kexec-bin/x86_64/kexec \
+                   kexec-bin/x86/kexec \
                    META-INF/com/google/android/update-binary \
                    META-INF/com/google/android/updater-script; do
             echo "$LISTING" | grep -q "$f" || { echo "MISSING: $f"; exit 1; }

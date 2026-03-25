@@ -7,7 +7,7 @@
 # It expects the appropriate cross-compiler packages to be installed
 # and the kexec-tools source tarball already extracted in /build/.
 #
-# Supported architectures: arm64
+# Supported architectures: arm64, arm, x86_64, x86
 
 set -eo pipefail
 
@@ -18,14 +18,31 @@ case "$ARCH" in
     arm64)
         CROSS_PREFIX="aarch64-linux-gnu"
         ;;
+    arm)
+        CROSS_PREFIX="arm-linux-gnueabihf"
+        ;;
+    x86_64)
+        CROSS_PREFIX=""
+        ;;
+    x86)
+        CROSS_PREFIX="i686-linux-gnu"
+        ;;
     *)
-        echo "ERROR: unsupported arch: $ARCH (expected: arm64)"
+        echo "ERROR: unsupported arch: $ARCH (expected: arm64, arm, x86_64, x86)"
         exit 1
         ;;
 esac
 
-CC="${CROSS_PREFIX}-gcc"
-STRIP="${CROSS_PREFIX}-strip"
+if [ -n "$CROSS_PREFIX" ]; then
+    CC="${CROSS_PREFIX}-gcc"
+    STRIP="${CROSS_PREFIX}-strip"
+    HOST_FLAG="--host=${CROSS_PREFIX}"
+else
+    CC="gcc"
+    STRIP="strip"
+    HOST_FLAG=""
+fi
+
 JOBS="$(nproc)"
 SRCDIR="/build/kexec-tools-${KEXEC_VERSION}"
 
@@ -39,8 +56,9 @@ if [ ! -f configure ]; then
     ./bootstrap
 fi
 
+# shellcheck disable=SC2086
 ./configure \
-    --host="${CROSS_PREFIX}" \
+    $HOST_FLAG \
     --without-xen \
     CC="$CC" \
     CFLAGS="-O2 -flto" \

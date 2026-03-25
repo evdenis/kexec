@@ -9,6 +9,7 @@ hooks/
 scripts/
 !scripts/build-kexec.sh
 system/
+kexec-bin/
 LICENSE
 CLAUDE.md
 CHECKLIST.md
