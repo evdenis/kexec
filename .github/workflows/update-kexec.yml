@@ -1,0 +1,45 @@
+name: Update kexec-tools
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Weekly: Monday 9am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-kexec
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check and update kexec-tools
+        run: bash scripts/bump-kexec.sh
+
+      - name: Check for new tag
+        id: tag
+        run: |
+          if [ -f .new-tag ]; then
+            echo "name=$(cat .new-tag)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push changes
+        if: steps.tag.outputs.name != ''
+        env:
+          NEW_TAG: ${{ steps.tag.outputs.name }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Use RELEASE_TOKEN (PAT) if available to trigger release workflow,
+          # otherwise fall back to GITHUB_TOKEN (push succeeds but won't
+          # trigger other workflows due to GitHub's anti-recursion rule).
+          if [ -n "$RELEASE_TOKEN" ]; then
+            git remote set-url origin "https://x-access-token:${RELEASE_TOKEN}@github.com/${REPO}.git"
+          fi
+          git push origin master "$NEW_TAG"

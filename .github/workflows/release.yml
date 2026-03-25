@@ -75,7 +75,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           printf '## %s — %s\n\n' "${NAME}" "${DESCRIPTION}" > /tmp/release-body.md
-          printf 'Magisk module providing kexec tools for Android (aarch64).\n' >> /tmp/release-body.md
+          printf 'Magisk module providing kexec tools for Android.\n' >> /tmp/release-body.md
           printf 'Installs `kexec` to `/system/bin/` via Magisk'\''s systemless overlay.\n\n' >> /tmp/release-body.md
           cat /tmp/release-notes.md >> /tmp/release-body.md
           printf '\n## Installation\n\n' >> /tmp/release-body.md
